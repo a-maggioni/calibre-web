@@ -20,4 +20,5 @@ Pillow>=4.0.0
 rarfile>=2.7
 # other
 natsort>=2.2.0
-
+# ldap
+python_ldap>=3.0.0
