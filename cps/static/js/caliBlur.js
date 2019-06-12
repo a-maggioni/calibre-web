@@ -148,7 +148,7 @@ if ( $( 'body.book' ).length > 0 ) {
   publisher = $( '.publishers p span' ).text().split( ':' );
     $( '.publishers p span' ).remove();
     $.each(publisher, function(i, val) {
-      $( '.publishers' ).append( '<span>' + publisher[i].trim() + '</span>' );
+      $( '.publishers' ).append( '<span>' + publisher[i].strip() + '</span>' );
     });
   $( '.publishers span:nth-child(3)' ).text(function() {
   return $(this).text().replace(/^\s+|^\t+|\t+|\s+$/g, "");
@@ -162,7 +162,7 @@ if ( $( 'body.book' ).length > 0 ) {
         real_cc = $(this).text().split( ':' );
         $( this ).text("");
         if (real_cc.length > 1) {
-            $( this ).append( '<span>' + real_cc[0].trim() + '</span><span>' + real_cc[1].trim() + '</span>' );
+            $( this ).append( '<span>' + real_cc[0].strip() + '</span><span>' + real_cc[1].strip() + '</span>' );
         }
     });
   //$( '.real_custom_columns:nth-child(3)' ).text(function() {
@@ -173,13 +173,13 @@ if ( $( 'body.book' ).length > 0 ) {
   .text().split(': ');
   $( '.publishing-date p' ).remove();
   $.each(published, function(i, val) {
-    $( '.publishing-date' ).append( '<span>' + published[i].trim() + '</span>' );
+    $( '.publishing-date' ).append( '<span>' + published[i].strip() + '</span>' );
   });
 
   languages = $( '.languages p span' ).text().split( ': ' );
   $( '.languages p span' ).remove();
   $.each(languages, function(i, val) {
-    $( '.languages' ).append( '<span>' + languages[i].trim() + '</span>' );
+    $( '.languages' ).append( '<span>' + languages[i].strip() + '</span>' );
   });
 
   $( '.book-meta h2:first' ).clone()
