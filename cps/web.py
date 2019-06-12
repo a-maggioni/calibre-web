@@ -2292,7 +2292,7 @@ def login():
     if request.method == "POST":
         form = request.form.to_dict()
         user = ub.session.query(ub.User).filter(func.lower(ub.User.nickname) == form['username'].strip().lower()).first()
-        if config.config_use_ldap and user:
+        if config.config_use_ldap and user and form['username'].strip().lower() != 'admin':
             import ldap
             try:
                 ub.User.try_login(form['username'], form['password'])
