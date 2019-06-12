@@ -751,7 +751,7 @@ def migrate_Database():
         session.query(exists().where(Settings.config_ldap_schema)).scalar()
     except exc.OperationalError:
         conn = engine.connect()
-        conn.execute("ALTER TABLE Settings ADD column `config_ldap_schema ` String DEFAULT ''")
+        conn.execute("ALTER TABLE Settings ADD column `config_ldap_schema` String DEFAULT ''")
         session.commit()
     try:
         session.query(exists().where(Settings.config_ldap_serv_username)).scalar()
