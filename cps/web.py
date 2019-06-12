@@ -2331,7 +2331,10 @@ def login():
     if request.method == "POST":
         form = request.form.to_dict()
         user = ub.session.query(ub.User).filter(func.lower(ub.User.nickname) == form['username'].strip().lower()).first()
-        app.logger.info('---->' + str(user.nickname))
+        app.logger.info('----------------')
+        app.logger.info(user.nickname)
+        app.logger.info(user.nickname is not "admin")
+        app.logger.info('----------------')
         if ldap_support and config.config_use_ldap and user and user.nickname is not "admin":
             try:
               if ldap.bind_user(form['username'], form['password']) is not None:
