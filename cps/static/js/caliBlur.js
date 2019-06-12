@@ -179,7 +179,7 @@ if ( $( 'body.book' ).length > 0 ) {
   languages = $( '.languages p span' ).text().split( ': ' );
   $( '.languages p span' ).remove();
   $.each(languages, function(i, val) {
-    $( '.languages' ).append( '<span>' + languages[i].trim() + '</span>' );
+    $( '.languages' ).append( '<span>' + languages[i] + '</span>' );
   });
 
   $( '.book-meta h2:first' ).clone()
