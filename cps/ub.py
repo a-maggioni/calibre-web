@@ -770,7 +770,7 @@ def migrate_Database():
         session.query(exists().where(Settings.config_ldap_use_tls)).scalar()
     except exc.OperationalError:
         conn = engine.connect()
-        conn.execute("ALTER TABLE Settings ADD column `cconfig_ldap_use_tls` INTEGER DEFAULT 0")
+        conn.execute("ALTER TABLE Settings ADD column `config_ldap_use_tls` INTEGER DEFAULT 0")
         session.commit()
     try:
         session.query(exists().where(Settings.config_ldap_require_cert)).scalar()
