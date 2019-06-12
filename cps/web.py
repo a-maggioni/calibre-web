@@ -2334,7 +2334,7 @@ def login():
         app.logger.info('----------------')
         app.logger.info('-' + str(user.nickname) + '-')
         app.logger.info(type(user.nickname))
-        app.logger.info(str(user.nickname) is not "admin")
+        app.logger.info(str(user.nickname) is not u"admin")
         app.logger.info('----------------')
         if ldap_support and config.config_use_ldap and user and user.nickname is not "admin":
             try:
