@@ -2333,7 +2333,7 @@ def login():
         user = ub.session.query(ub.User).filter(func.lower(ub.User.nickname) == form['username'].strip().lower()).first()
         app.logger.info('----------------')
         app.logger.info(user.nickname)
-        app.logger.info(user.nickname is not "admin")
+        app.logger.info(user.nickname.strip().lower() is not "admin")
         app.logger.info('----------------')
         if ldap_support and config.config_use_ldap and user and user.nickname is not "admin":
             try:
