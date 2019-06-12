@@ -30,7 +30,7 @@ from werkzeug.security import generate_password_hash
 import json
 import datetime
 from binascii import hexlify
-import cli
+from cps import cli
 
 engine = create_engine('sqlite:///{0}'.format(cli.settingspath), echo=False)
 Base = declarative_base()
@@ -174,14 +174,6 @@ class UserBase:
     def __repr__(self):
         return '<User %r>' % self.nickname
 
-    #Login via LDAP method
-    @staticmethod
-    def try_login(username, password):
-        conn = get_ldap_connection()
-        conn.simple_bind_s(
-             config.config_ldap_dn.replace("%s", username),
-             password
-        )
 
 # Baseclass for Users in Calibre-Web, settings which are depending on certain users are stored here. It is derived from
 # User Base (all access methods are declared there)
@@ -342,10 +334,18 @@ class Settings(Base):
     config_goodreads_api_key = Column(String)
     config_goodreads_api_secret = Column(String)
     config_use_ldap = Column(Boolean)
-    config_ldap_provider_url = Column(String)
+    config_ldap_provider_url = Column(String, default='localhost')
+    config_ldap_port = Column(SmallInteger, default=389)
+    config_ldap_schema = Column(String, default='ldap')
+    config_ldap_serv_username = Column(String)
+    config_ldap_serv_password = Column(String)
+    config_ldap_use_ssl = Column(Boolean, default=False)
+    config_ldap_use_tls = Column(Boolean, default=False)
+    config_ldap_require_cert = Column(Boolean, default=False)
+    config_ldap_cert_path = Column(String)
     config_ldap_dn = Column(String)
-    config_ldap_enable_tls = Column(Boolean)
-    config_ldap_ignore_certificate = Column(Boolean)
+    config_ldap_user_object = Column(String)
+    config_ldap_openldap = Column(Boolean)
     config_mature_content_tags = Column(String)
     config_logfile = Column(String)
     config_ebookconverter = Column(Integer, default=0)
@@ -369,7 +369,7 @@ class RemoteAuthToken(Base):
     expiration = Column(DateTime)
 
     def __init__(self):
-        self.auth_token = hexlify(os.urandom(4))
+        self.auth_token = (hexlify(os.urandom(4))).decode('utf-8')
         self.expiration = datetime.datetime.now() + datetime.timedelta(minutes=10)  # 10 min from now
 
     def __repr__(self):
@@ -423,9 +423,17 @@ class Config:
         self.config_goodreads_api_secret = data.config_goodreads_api_secret
         self.config_use_ldap = data.config_use_ldap
         self.config_ldap_provider_url = data.config_ldap_provider_url
+        self.config_ldap_port = data.config_ldap_port
+        self.config_ldap_schema = data.config_ldap_schema
+        self.config_ldap_serv_username = data.config_ldap_serv_username
+        self.config_ldap_serv_password = data.config_ldap_serv_password
+        self.config_ldap_use_ssl = data.config_ldap_use_ssl
+        self.config_ldap_use_tls = data.config_ldap_use_ssl
+        self.config_ldap_require_cert = data.config_ldap_require_cert
+        self.config_ldap_cert_path = data.config_ldap_cert_path
         self.config_ldap_dn = data.config_ldap_dn
-        self.config_ldap_enable_tls = data.config_ldap_enable_tls
-        self.config_ldap_ignore_certificate = data.config_ldap_ignore_certificate
+        self.config_ldap_user_object = data.config_ldap_user_object
+        self.config_ldap_openldap = data.config_ldap_openldap
         if data.config_mature_content_tags:
             self.config_mature_content_tags = data.config_mature_content_tags
         else:
@@ -726,10 +734,68 @@ def migrate_Database():
     except exc.OperationalError:
         conn = engine.connect()
         conn.execute("ALTER TABLE Settings ADD column `config_use_ldap` INTEGER DEFAULT 0")
+        session.commit()
+    try:
+        session.query(exists().where(Settings.config_ldap_provider_url)).scalar()
+    except exc.OperationalError:
+        conn = engine.connect()
         conn.execute("ALTER TABLE Settings ADD column `config_ldap_provider_url` String DEFAULT ''")
+        session.commit()
+    try:
+        session.query(exists().where(Settings.config_ldap_port)).scalar()
+    except exc.OperationalError:
+        conn = engine.connect()
+        conn.execute("ALTER TABLE Settings ADD column `config_ldap_port` INTEGER DEFAULT ''")
+        session.commit()
+    try:
+        session.query(exists().where(Settings.config_ldap_schema)).scalar()
+    except exc.OperationalError:
+        conn = engine.connect()
+        conn.execute("ALTER TABLE Settings ADD column `config_ldap_schema ` String DEFAULT ''")
+        session.commit()
+    try:
+        session.query(exists().where(Settings.config_ldap_serv_username)).scalar()
+    except exc.OperationalError:
+        conn = engine.connect()
+        conn.execute("ALTER TABLE Settings ADD column `config_ldap_serv_username` String DEFAULT ''")
+        conn.execute("ALTER TABLE Settings ADD column `config_ldap_serv_password` String DEFAULT ''")
+        session.commit()
+    try:
+        session.query(exists().where(Settings.config_ldap_use_ssl)).scalar()
+    except exc.OperationalError:
+        conn = engine.connect()
+        conn.execute("ALTER TABLE Settings ADD column `config_ldap_use_ssl` INTEGER DEFAULT 0")
+        session.commit()
+    try:
+        session.query(exists().where(Settings.config_ldap_use_tls)).scalar()
+    except exc.OperationalError:
+        conn = engine.connect()
+        conn.execute("ALTER TABLE Settings ADD column `cconfig_ldap_use_tls` INTEGER DEFAULT 0")
+        session.commit()
+    try:
+        session.query(exists().where(Settings.config_ldap_require_cert)).scalar()
+    except exc.OperationalError:
+        conn = engine.connect()
+        conn.execute("ALTER TABLE Settings ADD column `config_ldap_require_cert` INTEGER DEFAULT 0")
+        conn.execute("ALTER TABLE Settings ADD column `config_ldap_cert_path` String DEFAULT ''")
+        session.commit()
+    try:
+        session.query(exists().where(Settings.config_ldap_dn)).scalar()
+    except exc.OperationalError:
+        conn = engine.connect()
         conn.execute("ALTER TABLE Settings ADD column `config_ldap_dn` String DEFAULT ''")
-        conn.execute("ALTER TABLE Settings ADD column `config_ldap_enable_tls` INTEGER DEFAULT 0")
-        conn.execute("ALTER TABLE Settings ADD column `config_ldap_ignore_certificate` INTEGER DEFAULT 0")
+        session.commit()
+    try:
+        session.query(exists().where(Settings.config_ldap_user_object)).scalar()
+    except exc.OperationalError:
+        conn = engine.connect()
+        conn.execute("ALTER TABLE Settings ADD column `config_ldap_user_object` String DEFAULT ''")
+        session.commit()
+    try:
+        session.query(exists().where(Settings.config_ldap_openldap)).scalar()
+    except exc.OperationalError:
+        conn = engine.connect()
+        conn.execute("ALTER TABLE Settings ADD column `config_ldap_openldap` INTEGER DEFAULT 0")
         session.commit()
     try:
         session.query(exists().where(Settings.config_theme)).scalar()
@@ -853,20 +919,6 @@ else:
     migrate_Database()
     clean_database()
 
-def get_ldap_url():
-    url_template = 'ldaps://{}' if config.config_ldap_enable_tls else 'ldap://{}'
-    return url_template.format(config.config_ldap_provider_url)
-
-#get LDAP connection
-def get_ldap_connection():
-    import ldap
-    if config.config_ldap_ignore_certificate:
-        ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_ALLOW)
-    ldap_url = get_ldap_url()
-    conn = ldap.initialize(ldap_url)
-    if config.config_ldap_enable_tls:
-        conn.set_option(ldap.OPT_X_TLS_DEMAND, True)
-    return conn
 
 # Generate global Settings Object accessible from every file
 config = Config()
