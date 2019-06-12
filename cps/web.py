@@ -226,6 +226,7 @@ if ldap_support and config.config_use_ldap:
 
 #    app.config['LDAP_BASE_DN'] = 'ou=users,dc=yunohost,dc=org'
 #    app.config['LDAP_USER_OBJECT_FILTER'] = '(uid=%s)'
+    app.logger(app.config)
     ldap = LDAP(app)
 elif config.config_use_ldap and not ldap_support:
     app.logger.error('Cannot activate ldap support, did you run \'pip install --target vendor -r optional-requirements-ldap.txt\'?')
