@@ -210,7 +210,7 @@ if ldap_support and config.config_use_ldap:
     app.config['LDAP_HOST'] = config.config_ldap_provider_url
     app.config['LDAP_PORT'] = config.config_ldap_port
     app.config['LDAP_SCHEMA'] = config.config_ldap_schema
-    app.config['LDAP_USERNAME'] = config.config_ldap_user_object.replace('%s', config.config_ldap_serv_username) + ',' + config.config_ldap_dn
+    app.config['LDAP_USERNAME'] = config.config_ldap_serv_username
     app.config['LDAP_PASSWORD'] = base64.b64decode(config.config_ldap_serv_password)
     if config.config_ldap_use_ssl:
         app.config['LDAP_USE_SSL'] = True
@@ -223,12 +223,6 @@ if ldap_support and config.config_use_ldap:
     app.config['LDAP_USER_OBJECT_FILTER'] = config.config_ldap_user_object
     if config.config_ldap_openldap:
         app.config['LDAP_OPENLDAP'] = True
-
-#    app.config['LDAP_BASE_DN'] = 'ou=users,dc=yunohost,dc=org'
-#    app.config['LDAP_USER_OBJECT_FILTER'] = '(uid=%s)'
-    app.logger.info('------------')
-    app.logger.info(app.config)
-    app.logger.info('------------')
     ldap = LDAP(app)
 elif config.config_use_ldap and not ldap_support:
     app.logger.error('Cannot activate ldap support, did you run \'pip install --target vendor -r optional-requirements-ldap.txt\'?')
