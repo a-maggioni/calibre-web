@@ -2334,13 +2334,11 @@ def login():
                    login_user(user, remember=True)
                    flash(_(u"you are now logged in as: '%(nickname)s'", nickname=user.nickname), category="success")
                    return redirect_back(url_for("index"))
-            except LDAPException as ldap_exception:
-               app.logger.error( 'Login Error: ' + str(ldap_exception))
-               ipAdress = request.headers.get('X-Forwarded-For', request.remote_addr)
-               app.logger.info('LDAP Login failed for user "' + form['username'] + ', IP-address :' + ipAdress)
-               flash(_(u"Wrong Username or Password"), category="error")
+              else:
+                  app.logger.info('LDAP Login failed for user "' + form['username'])
+                  flash(_(u"Wrong Username or Password"), category="error")
             except Exception as exception:
-                app.logger.error( 'Generic Error during LDAP login: ' + str(exception))
+                app.logger.error( 'LDAP Exception: ' + str(exception))
                 flash(_(u"Generic error occurred during LDAP login"), category="error")
         elif user and (user.nickname == "admin" or check_password_hash(user.password, form['password'])) and user.nickname is not "Guest":
             login_user(user, remember=True)
