@@ -2340,7 +2340,7 @@ def login():
             except Exception as exception:
                 app.logger.error( 'LDAP Exception: ' + str(exception))
                 flash(_(u"Generic error occurred during LDAP login"), category="error")
-        elif user and check_password_hash(user.password, form['password'])V and user.nickname is not "Guest":
+        elif user and check_password_hash(user.password, form['password']) and user.nickname is not "Guest":
             login_user(user, remember=True)
             flash(_(u"you are now logged in as: '%(nickname)s'", nickname=user.nickname), category="success")
             return redirect_back(url_for("index"))
